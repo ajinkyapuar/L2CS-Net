@@ -27,7 +27,7 @@ def parse_args():
         default="0", type=str)
     parser.add_argument(
         '--snapshot',dest='snapshot', help='Path of model snapshot.', 
-        default='output/snapshots/L2CS-gaze360-_loader-180-4/_epoch_55.pkl', type=str)
+        default='models/L2CSNet/Gaze360/L2CSNet_gaze360.pkl', type=str)
     parser.add_argument(
         '--cam',dest='cam_id', help='Camera device id to use [0]',  
         default=0, type=int)
