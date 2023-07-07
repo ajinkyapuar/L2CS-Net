@@ -18,6 +18,7 @@ from face_detection import RetinaFace
 from model import L2CS
 
 import pickle
+from OneEuroFilter import OneEuroFilter
 
 xgb_model = None
 
@@ -26,6 +27,14 @@ with open("./models/xgb_regressor_model.pkl", "rb") as f:
     xgb_model = pickle.load(f)
     print("XGB Loaded")
 
+# Initialize the 1 Euro filter parameters
+min_cutoff = 1.0  # Minimum cutoff frequency
+beta = 0.3  # Speed coefficient
+der_cutoff = 1.0  # Derivative cutoff frequency
+
+# Initialize the 1 Euro filters for X and Y coordinates
+x_filter = OneEuroFilter(min_cutoff, beta, der_cutoff)
+y_filter = OneEuroFilter(min_cutoff, beta, der_cutoff)
 
 
 
@@ -113,6 +122,7 @@ if __name__ == '__main__':
             start_fps = time.time()  
            
             faces = detector(frame)
+            # print(faces)
             if faces is not None: 
                 for box, landmarks, score in faces:
                     if score < .95:
@@ -160,18 +170,36 @@ if __name__ == '__main__':
                     # print("Predicted Gaze | Pitch: {0} Yaw: {1}".format(pitch_predicted, yaw_predicted))
                     # print('###')
 
+                    #region Custom
+                
                     gaze_data = np.array([[pitch_predicted, yaw_predicted]])
                     # print(gaze_data, gaze_data.shape, type(gaze_data))
-                    gaze_data_reshape = gaze_data.reshape(1, 2)
+                    # gaze_data_reshape = gaze_data.reshape(1, 2)
                 
                     gaze_data_pred = xgb_model.predict(gaze_data)
-                    print(gaze_data_pred)
+                    # print(gaze_data_pred[0])
+                    # x, y = gaze_data_pred[0][0] * frame.shape[1], gaze_data_pred[0][1] * frame.shape[0]
                     # print("Gaze | X: {0} Y: {1}".format(x, y))
                     # print(frame.shape)
+
+                    # Apply the filters to the predicted gaze points
+                    filtered_x = x_filter(gaze_data_pred[0][0])
+                    filtered_y = y_filter(gaze_data_pred[0][1])
+
+                    # Convert the filtered coordinates to screen coordinates
+                    x = filtered_x * frame.shape[1]
+                    y = filtered_y * frame.shape[0]
+                    print("Gaze | X: {0} Y: {1}".format(x, y))
+
+
+                    cv2.circle(frame, tuple(np.round([x, y]).astype(int)), 3, (255,0,0), -1)
+
+                    #endregion
                 
                     
                     # draw_gaze(x_min,y_min,bbox_width, bbox_height,frame,(pitch_predicted,yaw_predicted),color=(0,0,255))
                     cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0,255,0), 1)
+
             myFPS = 1.0 / (time.time() - start_fps)
             cv2.putText(frame, 'FPS: {:.1f}'.format(myFPS), (10, 20),cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 255, 0), 1, cv2.LINE_AA)
 
