@@ -28,9 +28,9 @@ with open("./models/xgb_regressor_model.pkl", "rb") as f:
     print("XGB Loaded")
 
 # Initialize the 1 Euro filter parameters
-min_cutoff = 1.0  # Minimum cutoff frequency
-beta = 0.3  # Speed coefficient
-der_cutoff = 1.0  # Derivative cutoff frequency
+min_cutoff = 0.5  # Minimum cutoff frequency
+beta = 0.0001  # Speed coefficient
+der_cutoff = 0.5  # Derivative cutoff frequency
 
 # Initialize the 1 Euro filters for X and Y coordinates
 x_filter = OneEuroFilter(min_cutoff, beta, der_cutoff)
