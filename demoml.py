@@ -191,19 +191,21 @@ if __name__ == '__main__':
                     y = filtered_y * frame.shape[0]
                     print("Gaze | X: {0} Y: {1}".format(x, y))
 
-
-                    cv2.circle(frame, tuple(np.round([x, y]).astype(int)), 3, (255,0,0), -1)
-
+                    cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0,255,0), 1)
+                    frame_flipped = cv2.flip(frame, 1)
+                    cv2.circle(frame_flipped, tuple(np.round([x*1.5, y*1.5]).astype(int)), 3, (255,0,0), -1)
                     #endregion
                 
                     
                     # draw_gaze(x_min,y_min,bbox_width, bbox_height,frame,(pitch_predicted,yaw_predicted),color=(0,0,255))
-                    cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0,255,0), 1)
+                    # cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0,255,0), 1)
 
             myFPS = 1.0 / (time.time() - start_fps)
-            cv2.putText(frame, 'FPS: {:.1f}'.format(myFPS), (10, 20),cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 255, 0), 1, cv2.LINE_AA)
+            cv2.putText(frame_flipped, 'FPS: {:.1f}'.format(myFPS), (10, 20),cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 255, 0), 1, cv2.LINE_AA)
 
-            cv2.imshow("Demo",frame)
+            cv2.imshow("Demo", frame_flipped)
+            # cv2.imshow("Demo",frame)
+            
             if cv2.waitKey(1) & 0xFF == 27:
                 break
             success,frame = cap.read()  
